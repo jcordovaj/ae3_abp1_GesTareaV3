@@ -144,5 +144,13 @@
             android:text="Guardar Tarea"
             android:textSize="18sp" />
 
+        <ImageView
+            android:id="@+id/iv_logo"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/perasconmanzanas_icon"
+            android:layout_gravity="center"
+            android:alpha="0.3"  />
+
     </LinearLayout>
 </ScrollView>

@@ -13,53 +13,132 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import java.io.File
 import java.util.Calendar
+import android.widget.*
 
 class CrearTareaFragment : Fragment() {
+
+    // Variables
     private lateinit var taskViewModel: TaskViewModel
+
+    // Elementos de la vista
+    private lateinit var editTextTaskName       : EditText
+    private lateinit var editTextTaskDescription: EditText
+    private lateinit var editTextTaskDate       : EditText
+    private lateinit var editTextTaskTime       : EditText
+    private lateinit var spinnerStatus          : Spinner
+    private lateinit var spinnerCategory        : Spinner
+    private lateinit var checkBoxRequiresAlarm  : CheckBox
+
+    // Variables para cambio de Estado
+    private var taskId      : String? = null
+    private var isEditing   : Boolean = false
+    private var selectedDate: String  = ""
+    private var selectedTime: String  = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.crear_tarea, container, false)
+        val view = inflater.inflate(R.layout.crear_tarea,
+                                        container,
+                                        false)
 
         // Inicializa el ViewModel
         taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
 
-        // ... (Resto de inicialización de vistas, spinners, pickers, argumentos, igual) ...
+        // Inicialización los elementos del layout
+        editTextTaskName        = view.findViewById(R.id.editTextTaskName)
+        editTextTaskDescription = view.findViewById(R.id.editTextTaskDescription)
+        editTextTaskDate        = view.findViewById(R.id.editTextTaskDate)
+        editTextTaskTime        = view.findViewById(R.id.editTextTaskTime)
+        spinnerStatus           = view.findViewById(R.id.spinnerStatus)
+        spinnerCategory         = view.findViewById(R.id.spinnerCategory)
+        checkBoxRequiresAlarm   = view.findViewById(R.id.checkBoxRequiresAlarm)
 
+        // objeto botón 'Grabar'
         val buttonGrabar: Button = view.findViewById(R.id.buttonSaveTask)
 
-        // Listener botón grabar (Refactorizado)
+        // Seteo de Pickers para fecha y hora
+        editTextTaskDate.setOnClickListener { showDatePickerDialog() }
+        editTextTaskTime.setOnClickListener { showTimePickerDialog() }
+
+        // Carga datos de la tarea escogida si es edición
+        arguments?.let { args ->
+            isEditing    = true
+            taskId       = args.getString(TASK_ID_KEY)
+            editTextTaskName.setText(args.getString(TASK_NAME_KEY))
+            editTextTaskDescription.setText(args.getString(TASK_DESCRIPTION_KEY))
+            selectedDate = args.getString(TASK_DATE_KEY) ?: ""
+            selectedTime = args.getString(TASK_TIME_KEY) ?: ""
+            editTextTaskDate.setText(selectedDate)
+            editTextTaskTime.setText(selectedTime)
+            checkBoxRequiresAlarm.isChecked = args.getBoolean(TASK_ALARM_KEY)
+
+            // Setea los Spinners para estado y categoría
+            val statusAdapter = spinnerStatus.adapter as? ArrayAdapter<String>
+            statusAdapter?.getPosition(args.getString(TASK_STATUS_KEY))
+                ?.let { spinnerStatus.setSelection(it) }
+
+            val categoryAdapter = spinnerCategory.adapter as? ArrayAdapter<String>
+            categoryAdapter?.getPosition(args.getString(TASK_CATEGORY_KEY))
+                ?.let { spinnerCategory.setSelection(it) }
+
+            buttonGrabar.text = "Actualizar Tarea" // Cambia el texto para edición
+        } ?: run {
+            buttonGrabar.text = "Guardar Tarea" // Texto por defecto para creación
+        }
+
+        // Listener del botón
         buttonGrabar.setOnClickListener {
-            // ... (Captura de campos, validación de permisos y validación de campos, igual) ...
+            // Captura datos y valida campos
+            val taskName        = editTextTaskName.text.toString().trim()
+            val taskDescription = editTextTaskDescription.text.toString().trim()
+            val taskStatus      = spinnerStatus.selectedItem.toString()
+            val taskCategory    = spinnerCategory.selectedItem.toString()
+            val requiresAlarm   = checkBoxRequiresAlarm.isChecked
+
+            // Valida campos obligatorios
+            if (taskName.isEmpty() || selectedDate.isEmpty() || selectedTime.isEmpty()) {
+                Toast.makeText(requireContext(),
+                    "Debe completar campos obligatorios.",
+                    Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // Validación de permisos para alarma
+            if (requiresAlarm &&
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU &&
+                requireContext().checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED)
+            {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                Toast.makeText(requireContext(),
+                    "Falta autorizar permiso de notificación. Intente de nuevo.",
+                    Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
 
             // Si la validación es exitosa, llama al ViewModel
-            if (true /* asumiendo que la validación fue exitosa */) {
-                // **Llama al ViewModel para guardar/actualizar**
-                taskViewModel.saveOrUpdateTask(
-                    id            = taskId,
-                    name          = taskName,
-                    description   = taskDescription,
-                    status        = taskStatus,
-                    date          = taskDate,
-                    time          = taskTime,
-                    category      = taskCategory,
-                    requiresAlarm = requiresAlarm
-                )
-
-                // Navegación (responsabilidad de la View)
-                (activity as? MainActivity)?.loadFragment(VerTareasFragment())
-                resetFormFields()
-            }
+            taskViewModel.saveOrUpdateTask(
+                id            = taskId,
+                name          = taskName,
+                description   = taskDescription,
+                status        = taskStatus,
+                date          = selectedDate,
+                time          = selectedTime,
+                category      = taskCategory,
+                requiresAlarm = requiresAlarm
+            )
+            // Vuelve a la vista
+            (activity as? MainActivity)?.loadFragment(VerTareasFragment())
+            resetFormFields()
         }
         return view
     }
 
-    // MÉTODOS AUXILIARES (DatePicker, TimePicker, etc.), más adelante los llevaremos a otro paquete
-    // *********************************************************************************************
+    // Métodos auxiliares (DatePicker, TimePicker, etc.)
+    // *************************************************
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -70,31 +149,31 @@ class CrearTareaFragment : Fragment() {
                 Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(requireContext(),
-                "ALERTA: Sin permiso, la alarma no funcionará.",
+                "ALERTA: Falta autorizar permiso, la alarma no funcionará.",
                 Toast.LENGTH_LONG).show()
         }
     }
 
+    // Limpia el formulario
     private fun resetFormFields() {
-        view?.let {
-            it.findViewById<EditText>(R.id.editTextTaskName)?.setText("")
-            it.findViewById<EditText>(R.id.editTextTaskDescription)?.setText("")
-            editTextTaskDate.setText("")
-            editTextTaskTime.setText("")
-            selectedDate = ""
-            selectedTime = ""
+        editTextTaskName.setText("")
+        editTextTaskDescription.setText("")
+        editTextTaskDate.setText("")
+        editTextTaskTime.setText("")
+        checkBoxRequiresAlarm.isChecked = false
+        selectedDate = ""
+        selectedTime = ""
 
-            // Resetea los Spinners
-            (spinnerStatus.adapter as? ArrayAdapter<String>)?.let { adapter ->
-                spinnerStatus.setSelection(adapter.getPosition("Pendiente"))
-            }
-            (spinnerCategory.adapter as? ArrayAdapter<String>)?.let { adapter ->
-                spinnerCategory.setSelection(adapter.getPosition("Evento"))
-            }
-
-            taskId    = null
-            isEditing = false
+        // Resetea los Spinners
+        (spinnerStatus.adapter as? ArrayAdapter<String>)?.let { adapter ->
+            spinnerStatus.setSelection(adapter.getPosition("Pendiente"))
         }
+        (spinnerCategory.adapter as? ArrayAdapter<String>)?.let { adapter ->
+            spinnerCategory.setSelection(adapter.getPosition("Evento"))
+        }
+
+        taskId    = null
+        isEditing = false
     }
 
     private fun showDatePickerDialog() {
@@ -104,13 +183,14 @@ class CrearTareaFragment : Fragment() {
         val day        = calendar.get(Calendar.DAY_OF_MONTH)
         val datePicker = DatePickerDialog(requireContext(),
             { _, selectedYear,
-              selectedMonth, selectedDay ->
+                           selectedMonth,
+                           selectedDay ->
                 // Guarda la fecha
                 updateDateTimeFields(selectedYear,
-                                    selectedMonth,
-                                    selectedDay,
-                                    -1,
-                                    -1)
+                    selectedMonth,
+                    selectedDay,
+                    -1,
+                    -1)
             }, year, month, day)
         datePicker.show()
     }
@@ -123,18 +203,13 @@ class CrearTareaFragment : Fragment() {
         val timePicker = TimePickerDialog(requireContext(),
             { _, selectedHour, selectedMinute ->
                 updateDateTimeFields(-1, -1, -1, selectedHour, selectedMinute)
-            }, hour, minute, true) // true para formato 24 horas
+            }, hour, minute, true) // true para formato de 24 horas
 
         timePicker.show()
     }
 
-    private fun updateDateTimeFields(year: Int,
-                                     month: Int,
-                                     day: Int,
-                                     hour: Int,
-                                     minute: Int) {
+    private fun updateDateTimeFields(year: Int, month: Int, day: Int, hour: Int, minute: Int) {
         if (year != -1) {
-            // Nos aseguramos de actualizar la fecha en formato Latino DD/MM/YYYY)
             selectedDate = String.format("%02d/%02d/%d", day, month + 1, year)
             editTextTaskDate.setText(selectedDate)
         }
@@ -146,7 +221,6 @@ class CrearTareaFragment : Fragment() {
     }
 
     companion object {
-        // args keys como constantes
         const val TASK_ID_KEY          = "task_id"
         const val TASK_NAME_KEY        = "task_name"
         const val TASK_DESCRIPTION_KEY = "task_description"
@@ -157,16 +231,16 @@ class CrearTareaFragment : Fragment() {
         const val TASK_ALARM_KEY       = "task_alarm"
 
         @JvmStatic
-        fun newInstanceForEditing(taskId         : String,
-                                  taskName       : String,
+        fun newInstanceForEditing(taskId: String,
+                                  taskName: String,
                                   taskDescription: String,
-                                  taskStatus     : String,
-                                  taskDate       : String,
-                                  taskTime       : String,
-                                  taskCategory   : String,
-                                  requiresAlarm  : Boolean): CrearTareaFragment {
+                                  taskStatus: String,
+                                  taskDate: String,
+                                  taskTime: String,
+                                  taskCategory: String,
+                                  requiresAlarm: Boolean): CrearTareaFragment {
             val fragment = CrearTareaFragment()
-            val args     = Bundle().apply {
+            val args = Bundle().apply {
                 putString(TASK_ID_KEY, taskId)
                 putString(TASK_NAME_KEY, taskName)
                 putString(TASK_DESCRIPTION_KEY, taskDescription)

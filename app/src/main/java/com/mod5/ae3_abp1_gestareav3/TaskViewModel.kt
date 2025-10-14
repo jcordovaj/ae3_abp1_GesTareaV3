@@ -19,7 +19,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     private val _allTasks = MutableLiveData<List<Task>>()
     val allTasks: LiveData<List<Task>> get() = _allTasks
 
-    // LiveData para notificar mensajes de estado a la UI (Toast).
+    // LiveData para notificar mensajes de estado a la UI.
     private val _statusMessage = MutableLiveData<String?>()
     val statusMessage: LiveData<String?> get() = _statusMessage
 
@@ -27,15 +27,12 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         loadTasks() // Carga inicial
     }
 
-    /**
-     * Carga las tareas desde el repositorio y actualiza el LiveData.
-     * Este es el núcleo del patrón OBSERVADOR.
-     */
-    fun loadTasks() {
+    // Carga las tareas desde el repositorio y actualiza el LiveData.
+     fun loadTasks() {
         // Ejecuta la lectura de datos en un hilo de fondo (IO)
         viewModelScope.launch(Dispatchers.IO) {
             val tasks = repository.readAllTasks()
-            _allTasks.postValue(tasks) // postValue para actualizar LiveData desde un hilo de fondo
+            _allTasks.postValue(tasks) // Actualiza LiveData
         }
     }
 
@@ -63,14 +60,14 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
             if (success) {
                 _statusMessage.postValue("Tarea ${if (isEditing) "actualizada" else "guardada"} correctamente")
-                loadTasks() // Recarga para que los observadores (Fragments) se actualicen.
+                loadTasks() // Recarga para que los observadores actualicen los Fragments.
             } else {
                 _statusMessage.postValue("Error al guardar la tarea")
             }
         }
     }
 
-    // Marca una tarea como completada (actualiza el estado).
+    // Actualiza estado al marcar una tarea como completada.
     fun markTaskAsCompleted(task: Task) {
         val completedTask = task.copy(status = "Completada")
         viewModelScope.launch(Dispatchers.IO) {
@@ -84,20 +81,19 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // NUEVO: Llama al repositorio para eliminar una tarea.
+    // Llama al repositorio para eliminar una tarea.
     fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             val success = repository.deleteTaskById(task.id)
             if (success) {
-                _statusMessage.postValue("Tarea '${task.name}' eliminada (persistencia en CSV actualizada)")
-                loadTasks() // Recarga para que la lista se actualice automáticamente (OBSERVADOR).
+                _statusMessage.postValue("Tarea '${task.name}' eliminada (actualiza el CSV)")
+                loadTasks() // Recarga la lista.
             } else {
                 _statusMessage.postValue("Error al eliminar la tarea")
             }
         }
     }
 
-    // Limpia el mensaje de estado después de ser consumido por la UI.
     fun clearStatusMessage() {
         _statusMessage.value = null
     }

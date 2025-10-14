@@ -19,7 +19,16 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bienvenido a tu Agenda Personal"
+        android:text="Bienvenido"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Planner Tareas Personales V3.0"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"

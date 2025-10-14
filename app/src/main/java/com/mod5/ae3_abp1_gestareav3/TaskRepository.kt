@@ -1,11 +1,6 @@
 package com.mod5.ae3_abp1_gestareav3
 
 import android.content.Context
-import com.perasconmanzanas.gestareav3.model.Task
-import java.io.File
-import java.util.UUID
-import android.content.Context
-import com.perasconmanzanas.gestareav3.model.Task
 import java.io.File
 
 /**
@@ -14,8 +9,9 @@ import java.io.File
  */
 class TaskRepository(private val context: Context) {
 
-    private val fileName = "tareas.csv"
-    private fun getFile(): File = File(context.getExternalFilesDir(null), fileName)
+    private val fileName        = "tareas.csv"
+    private fun getFile(): File = File(context.getExternalFilesDir(null),
+        fileName)
 
     // Carga todas las tareas del archivo CSV.
     fun readAllTasks(): List<Task> {
@@ -92,7 +88,7 @@ class TaskRepository(private val context: Context) {
                 }
             }
 
-            // Reemplaza el archivo original con el swap (temporal) para manejar
+            // Reemplaza el archivo original con el swap (temporal)
             if (file.delete()) {
                 tempFile.renameTo(file)
             } else {
@@ -110,7 +106,8 @@ class TaskRepository(private val context: Context) {
     fun deleteTaskById(taskId: String): Boolean {
         return try {
             val file = getFile()
-            val tempFile = File(context.getExternalFilesDir(null), "tareas_temp_delete.csv")
+            val tempFile = File(context.getExternalFilesDir(null),
+                "tareas_temp_delete.csv")
             val lines = file.readLines()
 
             tempFile.bufferedWriter().use { writer ->

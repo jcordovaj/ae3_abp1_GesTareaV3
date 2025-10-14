@@ -1,16 +1,20 @@
 package com.mod5.ae3_abp1_gestareav3
 
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mainContentLayout: LinearLayout
-    // Se crea el ViewModel a nivel de Activity para compartirlo entre Fragments
+    // Crea el ViewMode
     private lateinit var taskViewModel: TaskViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // Método para iniciar la edición, pasará a CrearTareaFragment
+    // Método para editar una tarea
     fun startTaskEdit(task: Task) {
         val fragment = CrearTareaFragment.newInstanceForEditing(
             taskId          = task.id,
@@ -81,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFragment(fragment: Fragment) {
-        val fragmentManager: FragmentManager = supportFragmentManager
+        val fragmentManager    : FragmentManager     = supportFragmentManager
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.navigationFragmentContainer, fragment)
         fragmentTransaction.commit()

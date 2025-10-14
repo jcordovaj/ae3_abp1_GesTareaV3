@@ -19,10 +19,9 @@ data class Task(
 )
 
 class TaskAdapter(
-    // 1. Convertir a 'var' para permitir la actualización de datos desde el LiveData
     private var tasks        : List<Task>,
     private val onItemClick  : (Task) -> Unit,
-    // 2. Callback para manejar el evento de eliminación
+    // Callback para manejar el evento de eliminación
     private val onDeleteClick: (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
@@ -34,19 +33,19 @@ class TaskAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
-        // Pasar el callback de eliminación
+        // Callback de eliminación
         holder.bind(task, onItemClick, onDeleteClick, position + 1)
     }
 
     override fun getItemCount(): Int = tasks.size
 
     /**
-     * 3. Permite que el Fragment/ViewModel actualice la lista.
-     *    Esto se llama cuando el LiveData en el ViewModel cambia.
+     * Permite que el Fragment/ViewModel actualice la lista.
+     * Esto se llama cuando el LiveData en el ViewModel cambia.
      */
     fun updateTasks(newTasks: List<Task>) {
         this.tasks = newTasks
-        notifyDataSetChanged() // Notifica a RecyclerView que los datos han cambiado
+        notifyDataSetChanged() // lanza la notificación a RecyclerView que los datos han cambiado
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -60,7 +59,7 @@ class TaskAdapter(
         private val taskCategory   : TextView = itemView.findViewById(R.id.textViewTaskCategory)
         private val taskAlarm      : TextView = itemView.findViewById(R.id.textViewTaskAlarm)
 
-        // 4. Botón de eliminación (Asumiendo ID: buttonDeleteTask en item_task.xml)
+        // Botón eliminación
         private val buttonDelete: Button = itemView.findViewById(R.id.buttonDeleteTask)
 
         fun bind(task: Task, onItemClick: (Task) -> Unit, onDeleteClick: (Task) -> Unit, ordinalId: Int) {
