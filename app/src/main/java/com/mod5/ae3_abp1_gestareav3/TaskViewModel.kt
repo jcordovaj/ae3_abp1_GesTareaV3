@@ -5,15 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.perasconmanzanas.gestareav3.data.TaskRepository
-import com.perasconmanzanas.gestareav3.model.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-/**
- * ViewModel para gestionar las tareas. Usa LiveData para notificar a la UI.
- */
+// ViewModel para gestionar las tareas. Usa LiveData para notificar a la UI.
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     // Inicialización del Repository
@@ -44,8 +40,14 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun saveOrUpdateTask(
-        id: String?, name: String, description: String, status: String,
-        date: String, time: String, category: String, requiresAlarm: Boolean
+                            id           : String?,
+                            name         : String,
+                            description  : String,
+                            status       : String,
+                            date         : String,
+                            time         : String,
+                            category     : String,
+                            requiresAlarm: Boolean
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val isEditing = id != null
@@ -68,9 +70,21 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * NUEVO: Llama al repositorio para eliminar una tarea.
-     */
+    // Marca una tarea como completada (actualiza el estado).
+    fun markTaskAsCompleted(task: Task) {
+        val completedTask = task.copy(status = "Completada")
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = repository.updateTaskInCSV(completedTask)
+            if (success) {
+                _statusMessage.postValue("Tarea marcada como 'Completada'")
+                loadTasks() // Recarga para actualizar la vista
+            } else {
+                _statusMessage.postValue("Error al marcar la tarea")
+            }
+        }
+    }
+
+    // NUEVO: Llama al repositorio para eliminar una tarea.
     fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             val success = repository.deleteTaskById(task.id)
@@ -83,9 +97,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Limpia el mensaje de estado después de ser consumido por la UI.
-     */
+    // Limpia el mensaje de estado después de ser consumido por la UI.
     fun clearStatusMessage() {
         _statusMessage.value = null
     }

@@ -4,6 +4,9 @@ import android.content.Context
 import com.perasconmanzanas.gestareav3.model.Task
 import java.io.File
 import java.util.UUID
+import android.content.Context
+import com.perasconmanzanas.gestareav3.model.Task
+import java.io.File
 
 /**
  * Repository para manejar la persistencia de tareas en el archivo CSV.
@@ -14,11 +17,9 @@ class TaskRepository(private val context: Context) {
     private val fileName = "tareas.csv"
     private fun getFile(): File = File(context.getExternalFilesDir(null), fileName)
 
-    /**
-     * Lee todas las tareas del archivo CSV.
-     */
+    // Carga todas las tareas del archivo CSV.
     fun readAllTasks(): List<Task> {
-        val file = getFile()
+        val file     = getFile()
         val taskList = mutableListOf<Task>()
         if (file.exists()) {
             file.forEachLine { line ->
@@ -28,20 +29,22 @@ class TaskRepository(private val context: Context) {
                 val parts = line.split(",")
                 if (parts.size >= 8) {
                     val requiresAlarm = parts[7].toBoolean()
-                    val task = Task(parts[0], parts[1], parts[2],
-                        parts[3], parts[4], parts[5], parts[6],
-                        requiresAlarm)
+                    val task = Task(parts[0],
+                                    parts[1],
+                                    parts[2],
+                                    parts[3],
+                                    parts[4],
+                                    parts[5],
+                                    parts[6],
+                                    requiresAlarm)
                     taskList.add(task)
                 }
             }
         }
-        // Ahora, el ViewModel o Fragment se encarga de filtrar las eliminadas.
         return taskList
     }
 
-    /**
-     * Guarda una nueva tarea.
-     */
+    // Guarda una nueva tarea.
     fun saveTaskToCSV(task: Task): Boolean {
         return try {
             val file = getFile()
@@ -61,9 +64,7 @@ class TaskRepository(private val context: Context) {
         }
     }
 
-    /**
-     * Actualiza una tarea existente.
-     */
+    // Actualiza una tarea existente.
     fun updateTaskInCSV(updatedTask: Task): Boolean {
         return try {
             val file = getFile()
@@ -77,21 +78,21 @@ class TaskRepository(private val context: Context) {
                     if (parts.isNotEmpty() && parts[0] == updatedTask.id) {
                         // Escribe la línea actualizada
                         writer.write("${updatedTask.id}," +
-                                "${updatedTask.name}," +
-                                "${updatedTask.description}," +
-                                "${updatedTask.status}," +
-                                "${updatedTask.date}," +
-                                "${updatedTask.time}," +
-                                "${updatedTask.category}," +
-                                "${updatedTask.requiresAlarm}\n")
+                                           "${updatedTask.name}," +
+                                           "${updatedTask.description}," +
+                                           "${updatedTask.status}," +
+                                           "${updatedTask.date}," +
+                                           "${updatedTask.time}," +
+                                           "${updatedTask.category}," +
+                                           "${updatedTask.requiresAlarm}\n")
                     } else {
-                        // Mantiene la línea sin cambios
+                        // Mantiene la línea del archivo sin cambios
                         writer.write(line + "\n")
                     }
                 }
             }
 
-            // Reemplaza el archivo original con el temporal
+            // Reemplaza el archivo original con el swap (temporal) para manejar
             if (file.delete()) {
                 tempFile.renameTo(file)
             } else {
@@ -115,15 +116,14 @@ class TaskRepository(private val context: Context) {
             tempFile.bufferedWriter().use { writer ->
                 lines.forEach { line ->
                     val parts = line.split(",")
-                    // SOLO escribe la línea si su ID no coincide con el ID a eliminar
+                    // Se escribirá la línea sólo si el Id es distinto  del Id a eliminar
                     if (parts.isNotEmpty() && parts[0] != taskId) {
                         writer.write(line + "\n")
                     }
-                    // Si el ID coincide, se omite (eliminación)
                 }
             }
 
-            // Reemplaza el archivo original con el temporal
+            // Reemplaza el archivo original con el swap (temporal)
             if (file.delete()) {
                 tempFile.renameTo(file)
             } else {

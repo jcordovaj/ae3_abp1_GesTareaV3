@@ -1,7 +1,14 @@
 package com.mod5.ae3_abp1_gestareav3
 
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
-import androidx.appcompat.app.AlertDialog // Para el diálogo de eliminación
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 
 class VerTareasFragment : Fragment() {
 
@@ -60,9 +67,7 @@ class VerTareasFragment : Fragment() {
         return view
     }
 
-    /**
-     * Muestra un diálogo de confirmación.
-     */
+    // Muestra un diálogo de confirmación antes de eliminar tarea.
     private fun confirmAndDeleteTask(task: Task) {
         AlertDialog.Builder(requireContext())
             .setTitle("Eliminar Tarea")
@@ -74,6 +79,4 @@ class VerTareasFragment : Fragment() {
             .setNegativeButton("Cancelar", null)
             .show()
     }
-
-    // ELIMINAMOS el método readTasksFromCSV().
 }

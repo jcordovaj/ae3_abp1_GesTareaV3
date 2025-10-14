@@ -1,7 +1,11 @@
 package com.mod5.ae3_abp1_gestareav3
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
@@ -26,26 +30,60 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupMainLayout() {
         setContentView(R.layout.main)
-        // ... (resto de la inicialización del layout igual) ...
 
-        // **DEMOSTRACIÓN DE OBSERVADOR 1/2**: Observa mensajes del ViewModel
+        mainContentLayout = findViewById(R.id.mainContentLayout)
+        mainContentLayout.visibility = View.VISIBLE
+
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+
+        // Inicialmente, carga el fragmento de ver tareas
+        loadFragment(VerTareasFragment())
+        bottomNavigationView.selectedItemId = R.id.nav_view_tasks
+
+        // Listener para la barra de navegación inferior
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_view_tasks -> {
+                    loadFragment(VerTareasFragment())
+                    true
+                }
+                R.id.nav_add_task -> {
+                    loadFragment(CrearTareaFragment.newInstanceForCreation())
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Observador del ViewModel
         taskViewModel.statusMessage.observe(this, { message ->
-            message?.let {
-                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
-                taskViewModel.clearStatusMessage() // Importante: limpia el mensaje después de mostrarlo
+            if (!message.isNullOrBlank()) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                // Notifica al ViewModel que ya consumió el mensaje.
+                taskViewModel.clearStatusMessage()
             }
         })
-
-        // ... (resto de la configuración de navegación igual) ...
     }
 
+    // Método para iniciar la edición, pasará a CrearTareaFragment
     fun startTaskEdit(task: Task) {
-        // ... (método startTaskEdit igual) ...
+        val fragment = CrearTareaFragment.newInstanceForEditing(
+            taskId          = task.id,
+            taskName        = task.name,
+            taskDescription = task.description,
+            taskStatus      = task.status,
+            taskDate        = task.date,
+            taskTime        = task.time,
+            taskCategory    = task.category,
+            requiresAlarm   = task.requiresAlarm
+        )
+        loadFragment(fragment)
     }
 
     fun loadFragment(fragment: Fragment) {
-        // ... (método loadFragment igual) ...
+        val fragmentManager: FragmentManager = supportFragmentManager
+        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.navigationFragmentContainer, fragment)
+        fragmentTransaction.commit()
     }
-
-    // ELIMINAMOS el método resetTaskFile() de la Activity. La lógica de persistencia está en el Repository.
 }

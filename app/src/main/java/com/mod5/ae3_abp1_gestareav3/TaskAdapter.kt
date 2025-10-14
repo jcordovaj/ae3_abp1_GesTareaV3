@@ -1,45 +1,82 @@
 package com.mod5.ae3_abp1_gestareav3
 
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-data class TaskAdapter()
+data class Task(
+    val id             : String,
+    val name           : String,
+    val description    : String,
+    val status         : String,
+    val date           : String,
+    val time           : String,
+    val category       : String,
+    val requiresAlarm  : Boolean
+)
 
 class TaskAdapter(
-    // La lista ahora es 'var' para poder actualizarla
-    private var tasks: List<Task>,
-    private val onItemClick: (Task) -> Unit,
-    // NUEVO: Función lambda para manejar el evento de eliminación
+    // 1. Convertir a 'var' para permitir la actualización de datos desde el LiveData
+    private var tasks        : List<Task>,
+    private val onItemClick  : (Task) -> Unit,
+    // 2. Callback para manejar el evento de eliminación
     private val onDeleteClick: (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
-    // ... (onCreateViewHolder, getItemCount, igual) ...
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_task, parent, false)
+        return TaskViewHolder(view)
+    }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
-        // Se pasa la lambda de eliminación al ViewHolder
+        // Pasar el callback de eliminación
         holder.bind(task, onItemClick, onDeleteClick, position + 1)
     }
 
+    override fun getItemCount(): Int = tasks.size
+
     /**
-     * Método para actualizar la lista reactivamente, llamado desde el LiveData.
+     * 3. Permite que el Fragment/ViewModel actualice la lista.
+     *    Esto se llama cuando el LiveData en el ViewModel cambia.
      */
     fun updateTasks(newTasks: List<Task>) {
         this.tasks = newTasks
-        notifyDataSetChanged()
+        notifyDataSetChanged() // Notifica a RecyclerView que los datos han cambiado
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // ... (resto de referencias a TextViews igual) ...
-        // NUEVO: Referencia al botón de eliminación
+        // Ref layout
+        private val taskIdOrdinal  : TextView = itemView.findViewById(R.id.textViewTaskIdOrdinal)
+        private val taskIdUuid     : TextView = itemView.findViewById(R.id.textViewTaskIdUuid)
+        private val taskName       : TextView = itemView.findViewById(R.id.textViewTaskName)
+        private val taskDescription: TextView = itemView.findViewById(R.id.textViewTaskDescription)
+        private val taskDateTime   : TextView = itemView.findViewById(R.id.textViewTaskDateTime)
+        private val taskStatus     : TextView = itemView.findViewById(R.id.textViewTaskStatus)
+        private val taskCategory   : TextView = itemView.findViewById(R.id.textViewTaskCategory)
+        private val taskAlarm      : TextView = itemView.findViewById(R.id.textViewTaskAlarm)
+
+        // 4. Botón de eliminación (Asumiendo ID: buttonDeleteTask en item_task.xml)
         private val buttonDelete: Button = itemView.findViewById(R.id.buttonDeleteTask)
 
         fun bind(task: Task, onItemClick: (Task) -> Unit, onDeleteClick: (Task) -> Unit, ordinalId: Int) {
-            // ... (resto de la asignación de textos igual) ...
+            taskIdOrdinal.text   = "ID  : #$ordinalId"
+            taskIdUuid.text      = "UUID: ${task.id}"
+            taskName.text        = task.name
+            taskDescription.text = task.description
+            taskDateTime.text    = "Fecha y Hora: ${task.date} - ${task.time}"
+            taskStatus.text      = "Estado: ${task.status}"
+            taskCategory.text    = "Tipo: ${task.category}"
+            taskAlarm.text       = if (task.requiresAlarm) "Alarma: ✅ ON" else "Alarma: ❌ OFF"
 
+            // Listener para Edición
             itemView.setOnClickListener { onItemClick(task) }
 
-            // Listener para el botón de eliminación
+            // Listener para Eliminación
             buttonDelete.setOnClickListener { onDeleteClick(task) }
         }
     }
