@@ -16,7 +16,7 @@ class VerTareasFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var textViewEmptyMessage: TextView
     private lateinit var taskAdapter : TaskAdapter
-    // Referencia al ViewModel compartido con la Activity
+    // Referencia al ViewModel
     private lateinit var taskViewModel: TaskViewModel
 
     override fun onCreateView(
