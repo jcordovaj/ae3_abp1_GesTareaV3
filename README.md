@@ -1,49 +1,68 @@
-# CASO AE2-ABPRO1: DESARROLLO AGENDA V2 📅 - PERSISTENCIA, PERMISOS E INTEGRACIÓN
+# 🚀 CASO AE3-ABPRO1: GESTOR DE TAREAS V3 - ARQUITECTURA MVVM Y REACTIVIDAD
 
 <p float="center">
   <img src="scrapbook/perasconmanzanas_icon.png" alt="Logo" width="200"/>
 </p>
 
-Este proyecto es una mini aplicación nativa para Android, desarrollada en Kotlin. Su objetivo es ilustrar la gestión completa del ciclo de vida de una tarea, incluyendo la persistencia local de datos (CSV), cambio de estado, filtrado dinámico, la gestión de permisos sensibles en tiempo de ejecución (Notifications y Calendar), y la interoperabilidad de la aplicación con servicios del sistema Android (BottomNavigationView, Fragments, y el Calendar Provider).
+Este proyecto es una mini aplicación nativa para Android, desarrollada en Kotlin, que tomando como base una aplicación previa (Agenda V2), la mejjora y evoluciona arquitectónicamente para adoptar el patrón _**Model-View-ViewModel (MVVM)**_. Su objetivo es ilustrar la gestión completa del ciclo de vida de una tarea de manera reactiva y eficiente, separando claramente las responsabilidades.
 
-**Nota**: Se reutiliza el código del Caso AE1-ABPRO1 Agenda V1.
+La presente version 3.0, refactoriza la capa de persistencia local (archivo CSV en el dispositivo), y la lógica de negocio para que sean gestionadas por el TaskViewModel y el TaskRepository, utilizando LiveData y Coroutines para notificar a la UI (Fragments) sobre cambios que ocurren en tiempo real, garantizando la persistencia, el cambio de estado, y la gestión de permisos sensibles.
 
-## Requerimientos del Caso
+**Nota**: Se reutiliza la base funcional del Caso AE2-ABPRO1 Agenda V2.
+
+---
+
+## 🎯 Requerimientos de Funcionalidad
 
 1. Registrar eventos con título, descripción y fecha/hora de recordatorio.
-2. Liste los eventos registrados aplicando filter y sorting sobre los datos.
-3. Gestionar correctamente el ciclo de vida de Activities y Fragments
-4. Solicitar permisos sensibles (como notificaciones o calendario si es necesario) de forma segura y solo cuando se requiera
-5. Agregue y gestione Fragments dinámicamente con paso de parámetros
-6. Implemente un RecyclerView para mostrar las tareas creadas
-7. Utilice Intents y Bundles para pasar datos entre pantallas o componentes
-8. Proporcione feedback visual al usuario sobre los cambios en el ciclo de vida (por ejemplo, mediante logs o toasts)
+2. Listar los eventos registrados aplicando filtros y ordenamiento sobre los datos.
+3. Gestionar correctamente el ciclo de vida de Activities y Fragments.
+4. Solicitar permisos sensibles (como notificaciones o calendario si es necesario) de forma segura y solo cuando se requiera.
+5. Agregar y gestionar Fragments dinámicamente con paso de parámetros.
+6. Implementar un RecyclerView para mostrar las tareas creadas.
+7. Proporcionar feedback visual al usuario sobre los cambios de estado (por ejemplo, mediante logs o toasts).
 
-## Requerimientos Técnicos
+---
 
-1. Mostrar el cambio de estado de la Activity y los Fragments con Toasts
-2. Manejar la recreación de la Activity ante cambios de configuración (rotación de pantalla)
-3. Crear y añadir Fragments de forma dinámica usando método de factoría y pasándoles parámetros
-4. Permisos Sensibles
-5. Solicitar permisos para notificaciones o calendario solo si se usa la función de recordatorio
-6. Explicar cómo se integra esta solicitud dentro del ciclo de vida de la Activity
-7. Implementar un Adapter personalizado para mostrar la lista de tareas
-8. Explicar brevemente la razón del uso de RecyclerView en lugar de otros adaptadores tradicionales
-9. Crear un Intent explícito para ir a una pantalla de edición de tareas
-10. Utilizar Bundle para pasar datos entre Activities o Fragments
-11. Implementar un flujo de startActivityForResult() para editar una tarea y recibir el resultado (DEPRECADO). Se reemplazó por Transacción de Fragmentos y Persistencia.
+## 🧠 Requerimientos Técnicos y Arquitectura MVVM
 
-## Características y Usabilidad
+El enfoque de esta versión ha sido la adopción de la Arquitectura MVVM, que proporciona una clara _**separación de responsabilidades**_:
 
-1. Manejo de ClassCastException y Tipado estricto en la interfaz de usuario.
-2. Uso de registerForActivityResult para la gestión moderna de permisos de Android 13+ (Tiramisu).
-3. Navegación unificada: La lógica de navegación ha sido centralizada en la "Barra de Navegación Inferior" (BottomNavigationView).
-4. Gestión de tareas/eventos: Permite registrar y modificar eventos o recordatorios, capturando información esencial como Nombre, Descripción, Fecha, Hora, Estado, Categoría, y si requiere Alarma.
-5. Recordatorios Funcionales (MVP): Luego de probar varias opciones, la aplicación delega la creación de recordatorios y alarmas al Calendar Provider de Android, garantizando que las notificaciones se disparen correctamente y eviten restricciones de ahorro de batería (Doze).
-6. Permisos Seguros: Se solicita el permiso de Notificaciones (POST_NOTIFICATIONS) solo cuando el usuario activa la alarma, utilizando el contrato ActivityResultContracts.RequestPermission().
-7. Persistencia local: La aplicación utiliza un archivo 'tareas.csv' como objeto persistente, para el almacenamiento y la manipulación de registros.
+1. Modelo (Model) y Persistencia
 
-## Tecnologías usadas 🛠️
+   - **Modelo de Datos (Task)**: Es la clase de datos que define la estructura de una tarea.
+   - **Repositorio (TaskRepository)**: Centraliza el acceso a los datos. Es responsable de la persistencia local (archivos CSV) y ejecuta todas las operaciones de I/O de forma asíncrona.
+
+2. ViewModel (TaskViewModel)
+
+   - Hereda de AndroidViewModel y utiliza viewModelScope para lanzar corrutinas, asegurando que las operaciones pesadas (como leer/escribir CSV) se ejecuten en el Dispatchers.IO (hilo de fondo).
+   - Mantiene la lógica de negocio, manipula los datos del Repositorio y expone el estado de la aplicación a través de LiveData (ej. allTasks, statusMessage).
+
+3. Vista (View)
+
+   - MainActivity y Fragments (VerTareasFragment y CrearTareaFragment).
+   - La Vista solo observa los LiveData expuestos por el TaskViewModel y actualiza la UI de forma reactiva, sin manipular directamente los datos ni conocer la fuente de persistencia (CSV).
+
+4. Otros aspectos técnicos
+   - Mostrar el cambio de estado de la Activity y los Fragments con Toasts.
+   - Manejar la recreación de la Activity ante cambios de configuración (rotación de pantalla).
+   - Crear y añadir Fragments de forma dinámica usando método de factoría (newInstance).
+   - Permisos Sensibles: Se gestiona la solicitud de permisos de **"Notificaciones"** (POST_NOTIFICATIONS), se integra en el flujo de grabación de tareas mediante registerForActivityResult.
+   - Implementa un Adapter personalizado para el RecyclerView.
+   - Uso de bundle para pasar datos (ej. al Fragment de edición de una tarea).
+
+## ✨ Características y Usabilidad
+
+1.  **Arquitectura MVVM**: Implementación estricta de MVVM utilizando LiveData para la reactividad y Coroutines/viewModelScope para la gestión asíncrona de datos.
+2.  **Gestión de Tareas/Eventos**: Permite registrar, modificar, marcar como completadas y eliminar eventos o recordatorios, capturando información esencial (Nombre, Descripción, Fecha, Hora, Estado, Categoría, y Alarma).
+3.  **Navegación Unificada**: La lógica de navegación ha sido centralizada en la BottomNavigationView y gestionada por la MainActivity mediante transacciones de Fragments.
+4.  **Persistencia Local con Repositorio**: La aplicación utiliza un archivo tareas.csv como almacenamiento persistente, gestionado internamente por el TaskRepository.
+5.  **Delegación de Alarma**: La creación de recordatorios y alarmas se delega al Calendar Provider de Android mediante un Intent explícito, garantizando la funcionalidad fuera de las restricciones de la aplicación.
+6.  **Permisos Seguros (Tiramisu+)**: Se solicita el permiso de Notificaciones (POST_NOTIFICATIONS) solo si el usuario activa la alarma, utilizando el contrato ActivityResultContracts.RequestPermission().
+
+---
+
+## 🛠️ Tecnologías usadas
 
 - IDE: Android Studio (Narwhal 3, basado en IntelliJ IDEA)
 - Plataforma: Android Nativo
@@ -51,12 +70,17 @@ Este proyecto es una mini aplicación nativa para Android, desarrollada en Kotli
 - SDK Target: 36
 - Kotlin: 1.9.22
 - Java: 21
+- Arquitectura: MVVM (Model-View-ViewModel).
+- Concurrencia: Kotlin Coroutines y viewModelScope.
+- Comunicación Reactiva: LiveData.
 - UI/Navegación: Activity, Fragment y BottomNavigationView
 - Almacenamiento: Archivos CSV (ubicados en getExternalFilesDir(null), en el dispositivo)
 - APIs de Sistema: AlarmManager, CalendarContract (Calendar Provider).
 - Otras tecnologías: Git, Github, Github Desktop.
 
-## Estructura de Datos (CSV) 💾
+---
+
+## 💾 Estructura de Datos (CSV)
 
 El archivo tareas.csv se compone de 8 atributos, con la siguiente estructura:
 
@@ -71,28 +95,33 @@ El archivo tareas.csv se compone de 8 atributos, con la siguiente estructura:
 | Categoría   | Clasificación del registro (Evento, recordatorio, Tarea)    | String       |
 | Alarma      | Switch que activa o desactiva alarma recordatorio (boolean) | String       |
 
-## Funcionamiento de la Aplicación
+## 🏗️ Funcionamiento de la Aplicación
 
-La aplicación es un prototipo para la gestión de eventos o tareas (recordatorios). El flujo base es el siguiente:
+El flujo base es el siguiente:
 
-1. Pantalla de inicio: Al abrir la aplicación, se muestra una pantalla de bienvenida.
-2. Vista Agenda: Presenta un listado de los eventos pendientes. Cada elemento puede ser accesado y modificado para cambiar su estado.
-3. Crear evento (Flujo con Alarma):
-   1. El usuario presiona el botón "Agregar".
-   2. Se abre el formulario que incluye el switch "Alarma".
-   3. Al presionar grabar y si el switch "Alarma" está activo:
-      1. La aplicación solicita el permiso de Notificaciones (POST_NOTIFICATIONS).
-   4. La aplicación guarda la tarea en el CSV.
-   5. La aplicación lanza un Intent que abre la aplicación nativa de Calendario del dispositivo, precargando los campos del evento, delegando la gestión del recordatorio al sistema operativo.
-4. Barra de Navegación: La barra de navegación inferior permite al usuario moverse fácilmente entre las vistas de "Agenda" y "Crear Evento".
+1. Inicio y Navegación: La aplicación muestra la pantalla de bienvenida y luego la MainActivity orquesta la navegación a través de la BottomNavigationView entre VerTareasFragment (Agenda) y CrearTareaFragment.
+2. Vista Agenda (VerTareasFragment):
+   - Observa el taskViewModel.allTasks (LiveData).
+   - Cuando el ViewModel actualiza esta lista, el RecyclerView se redibuja automáticamente (reactividad).
+   - Maneja la acción de eliminar o marcar como completada, llamando a los métodos correspondientes en el ViewModel.
+3. Crear/Editar Evento (CrearTareaFragment):
+   - El usuario ingresa o edita los datos.
+   - Al presionar "Guardar" o "Actualizar":
+     - Se realiza la validación de campos obligatorios.
+     - Si se requiere alarma (Notificación), se verifica/solicita el permiso de Notificaciones (POST_NOTIFICATIONS) usando registerForActivityResult.
+     - Se llama a taskViewModel.saveOrUpdateTask(), que ejecuta la lógica de persistencia en el TaskRepository fuera del hilo principal.
+     - La vista (Fragment) observa el taskViewModel.statusMessage para mostrar un Toast de confirmación de forma segura.
+     - Finalmente, la vista navega de vuelta a la Agenda.
+4. Las tareas listadas, se puede seleccionar para ser editadas.
+5. Cada tarea tiene un botón eliminar que permite proceder al borrado explícito, debiendo confirmar la acción.
 
-Capturas de Pantalla
+## Capturas de Pantalla
 
 <p float="left">
   <img src="scrapbook/pantalla_inicial.png" alt="Pantalla inicial" width="150"/>  
-  <img src="scrapbook/agregar_evento.png" alt="Agregar Actividad" width="150"/>
-  <img src="scrapbook/advertencia_notificaciones.png" alt="Notificación" width="150"/>
-  <img src="scrapbook/date_picker.png" alt="Date picker" width="150"/>
+  <img src="scrapbook/permisos.png" alt="Autorizar permiso NOTIFICACIÓN" width="150"/>
+  <img src="scrapbook/vista_sin_tareas.png" alt="Agenda sin tareas" width="150"/>
+  <img src="scrapbook/crear_editar_tarea.png" alt="Date picker" width="150"/>
   <img src="scrapbook/lista_actividades.png" alt="Lista de actividades" width="150"/>
   <img src="scrapbook/permiso_notificaciones.png" alt="Notificaciones" width="150"/>
   <img src="scrapbook/toast_advertencia_notificaciones.png" alt="Advertencia" width="150"/>
