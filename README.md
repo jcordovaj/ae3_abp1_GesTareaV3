@@ -121,10 +121,16 @@ El flujo base es el siguiente:
   <img src="scrapbook/pantalla_inicial.png" alt="Pantalla inicial" width="150"/>  
   <img src="scrapbook/permisos.png" alt="Autorizar permiso NOTIFICACIÓN" width="150"/>
   <img src="scrapbook/vista_sin_tareas.png" alt="Agenda sin tareas" width="150"/>
-  <img src="scrapbook/crear_editar_tarea.png" alt="Date picker" width="150"/>
-  <img src="scrapbook/lista_actividades.png" alt="Lista de actividades" width="150"/>
-  <img src="scrapbook/permiso_notificaciones.png" alt="Notificaciones" width="150"/>
-  <img src="scrapbook/toast_advertencia_notificaciones.png" alt="Advertencia" width="150"/>
+  <img src="scrapbook/crear_editar_tarea.png" alt="Formulario crear/ editar tarea" width="150"/>
+  <img src="scrapbook/fecha.png" alt="Selector de fecha" width="150"/>
+  <img src="scrapbook/hora.png" alt="Selector de hora" width="150"/>  
+  <img src="scrapbook/selector_estados.png" alt="Selector de estados" width="150"/>
+  <img src="scrapbook/selector_categorias.png" alt="Selector categorías" width="150"/>
+  <img src="scrapbook/manejo_toast_guardar.png" alt="Advertencia" width="150"/>
+  <img src="scrapbook/tarea_creada1.png" alt="Selector categorías" width="150"/>
+  <img src="scrapbook/confirmar_eliminacion.png" alt="Selector categorías" width="150"/>
+  <img src="scrapbook/toast_eliminacion.png" alt="Selector categorías" width="150"/>  
+  
 </p>
 
 ## Guía de Ejecución del Proyecto
