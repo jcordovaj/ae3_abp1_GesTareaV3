@@ -126,10 +126,10 @@ El flujo base es el siguiente:
   <img src="scrapbook/hora.png" alt="Selector de hora" width="150"/>  
   <img src="scrapbook/selector_estados.png" alt="Selector de estados" width="150"/>
   <img src="scrapbook/selector_categorias.png" alt="Selector categorías" width="150"/>
-  <img src="scrapbook/manejo_toast_guardar.png" alt="Advertencia" width="150"/>
-  <img src="scrapbook/tarea_creada1.png" alt="Selector categorías" width="150"/>
-  <img src="scrapbook/confirmar_eliminacion.png" alt="Selector categorías" width="150"/>
-  <img src="scrapbook/toast_eliminacion.png" alt="Selector categorías" width="150"/>  
+  <img src="scrapbook/manejo_toast_guardar.png" alt="Toast guardar" width="150"/>
+  <img src="scrapbook/tarea_creada1.png" alt="Crea Tarea 1" width="150"/>
+  <img src="scrapbook/confirmar_eliminacion.png" alt="Confirmar elimina Tarea 1" width="150"/>
+  <img src="scrapbook/toast_eliminacion.png" alt="Toast confirmación elimnación" width="150"/>  
   
 </p>
 
