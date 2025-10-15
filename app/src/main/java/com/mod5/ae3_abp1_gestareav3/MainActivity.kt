@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupMainLayout() {
         setContentView(R.layout.main)
 
-        mainContentLayout = findViewById(R.id.mainContentLayout)
+        mainContentLayout            = findViewById(R.id.mainContentLayout)
         mainContentLayout.visibility = View.VISIBLE
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
